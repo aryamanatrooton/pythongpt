@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Root On's PR Pathway CRS Mark II</title>
+    <!-- Add either Bulma or Tailwind CSS link -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css">
+    <!-- OR -->
+    <!-- <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet"> -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="./styles.css">
+
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+
+    <!-- Add the following line to load jQuery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+
+    <!-- Add these lines -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.72/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.72/vfs_fonts.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/showdown/1.9.0/showdown.min.js"></script>
+
+    <style>
+        .copy-icon {
+            float: right;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+
+        /* body {
+            font-family: Arial, sans-serif;
+            background: #e5e5e5;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            padding: 10px;
+        } */
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(to right, #ffffff, #e5e5e5);
+            /* More pronounced gradient effect */
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            padding: 10px;
+            overflow: hidden;
+            /* add this line to hide the scrollbar */
+        }
+
+
+        body::-webkit-scrollbar {
+            display: none;
+        }
+
+        body {
+            -ms-overflow-style: none;
+            /* IE and Edge */
+            scrollbar-width: none;
+            /* Firefox */
+        }
+
+        .chat-container {
+            /* max-width: 600px; */
+            margin: 10px auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            padding: 10px;
+        }
+
+        h1 {
+            color: white;
+            background: linear-gradient(135deg, #e9b739, #f8d458, #f4e785);
+            padding: 20px;
+            border-radius: 8px 8px 0 0;
+            margin: 0;
+            background-clip: border-box;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        #response {
+            padding: 20px;
+            height: 100%;
+            overflow-y: scroll;
+            scrollbar-width: thin;
+            scrollbar-color: #888 #e8e8e8;
+            /* white-space: pre; */
+            white-space: break-spaces;
+            line-height: 1.5;
+        }
+
+        .message {
+            padding: 10px;
+            border-radius: 16px;
+            margin-bottom: 20px;
+        }
+
+        .user-message {
+            text-align: right;
+            color: #007bff;
+        }
+
+        .ai-message {
+            color: #333;
+        }
+
+        .timestamp {
+            font-size: 0.7em;
+            color: #777;
+        }
+
+        #chat-form {
+            padding: 20px;
+            border-top: 1px solid #f0f0f0;
+            /* background: #e8e8e8; */
+        }
+
+        .form-control {
+            box-shadow: none !important;
+        }
+
+        .table {
+            margin: 20px 0;
+            /* display: flex; */
+            justify-content: center;
+        }
+
+        .typing-indicator {
+            display: inline-block;
+            animation: wobble 2s infinite;
+        }
+
+        .typing-indicator img {
+            width: 50px;
+            height: auto;
+            vertical-align: middle;
+        }
+
+        .download-button {
+            text-align: center;
+            margin: 20px;
+        }
+
+        .download-button button {
+            padding: 10px 20px !important;
+            border: none;
+            background: #e9b739;
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .download-button button:hover {
+            background: #d49719;
+        }
+
+
+        /* Scrollbar Styles */
+        #response::-webkit-scrollbar {
+            width: 6px;
+            background-color: #e8e8e8;
+        }
+
+        #response::-webkit-scrollbar-thumb {
+            background-color: #888;
+            border-radius: 3px;
+        }
+
+        #response::-webkit-scrollbar-thumb:hover {
+            background-color: #555;
+        }
+
+        #usercontext::-webkit-scrollbar {
+            width: 6px;
+            background-color: #e8e8e8;
+        }
+
+        #usercontext::-webkit-scrollbar-thumb {
+            background-color: #888;
+            border-radius: 3px;
+        }
+
+        #usercontext::-webkit-scrollbar-thumb:hover {
+            background-color: #555;
+        }
+
+        #getrecommendation {
+            padding: 10px 20px !important;
+            border: none;
+            background: #e9b739;
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-bottom: 10px;
+            text-decoration: none;
+        }
+
+        /* @media (max-width: 768px) {
+    h1{
+      font-size: 1rem !important;
+    }
+    .chat-container{
+      width:100%;
+    }
+    
+  } */
+        .disabled-button {
+            background-color: #cccccc !important;
+            /* or any color you want */
+            color: red !important;
+            cursor: not-allowed !important;
+            /* changes cursor on hover */
+            text-decoration: line-through !important;
+        }
+
+        @media only screen and (max-width: 1366px) {
+            h1 {
+                font-size: 1.75rem !important;
+            }
+
+            #download-btn {
+                margin-bottom: 5px;
+            }
+
+            .chat-container {
+                width: 100%;
+            }
+
+            .title {
+                font-size: 20px;
+            }
+
+            .textarea {
+                max-height: 200px !important;
+                min-height: 24px !important;
+                padding-inline: 11px !important;
+                padding-top: 7px !important;
+            }
+
+            .py-2 {
+                padding-top: 6px;
+                padding-bottom: 6px;
+            }
+
+            .px-4 {
+                padding-left: 12px;
+                padding-right: 12px;
+            }
+
+            .title:not(:last-child) {
+                margin-bottom: 0.5rem;
+            }
+        }
+
+        @media only screen and (max-width: 375px) {
+            .textarea {
+                max-height: 100px !important;
+                min-height: 65px !important;
+            }
+
+            #download-btn {
+                margin-bottom: 5px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="chat-container">
+        <h1 class="title is-1 has-text-centered">Root On's PR Pathway Finder</h1>
+        <div id="response"></div>
+        <form id="chat-form" method="POST">
+            <div class="field">
+                <div class="control">
+                    <textarea class="textarea" id="usercontext" name="usercontext" required
+                        placeholder="Type your message here and press Enter" autocomplete="off"></textarea>
+                </div>
+            </div>
+        </form>
+        <div class="download-button">
+            <button id="download-btn" class="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded">
+                Download Conversation
+            </button>
+            <button id="new-session-btn" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded">
+                Embark On A New Conversation
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // function addButtonClickListener(button) {
+        //     button.addEventListener('click', function () {
+        //         alert("button clicked python");
+        //         // Send a postMessage to the parent window
+        //         window.parent.postMessage('buttonClicked', '*');
+        //     });
+        // }
+
+            // this still works....
+        // $(document).on('click', '#getrecommendation', function () {
+        //     var button = $(this);
+
+        //     // Disable the button
+        //     button.prop('disabled', true);
+        //     button.prop('disabled', true).addClass('disabled-button');
+        //     alert("button clicked python");
+            
+        //     // Send a postMessage to the parent window
+        //     window.parent.postMessage('buttonClicked', '*');
+        //     setTimeout(function () {
+        //         button.prop('disabled', false).removeClass('disabled-button');
+        //     }, 60000);
+        // });
+
+
+
+
+
+    $(document).on('click', '#getrecommendation', function () {
+        var button = $(this);
+
+        // Disable the button
+        button.prop('disabled', true);
+        button.prop('disabled', true).addClass('disabled-button');
+        alert("button clicked python");
+
+        // Call the API
+        $.ajax({
+            url: '/get_conversation_history',
+            method: 'GET',
+            success: function (response) {
+                // Create an object with both the response and the button click information
+                var data = {
+                    response: response,
+                    buttonClicked: true
+                };
+
+                // Send the combined data to the React frontend
+                window.parent.postMessage(data, '*');
+            },
+            complete: function () {
+                // Re-enable the button after the API call is complete
+                setTimeout(function () {
+                    button.prop('disabled', false).removeClass('disabled-button');
+                }, 60000);
+            }
+        });
+    });
+
+
+
+
+
+
+
+
+
+
+        // Function to save messages to localStorage
+        function saveMessages() {
+            var messages = [];
+            $('.message').each(function () {
+                var message = {
+                    html: $(this).html(),
+                    class: $(this).attr('class')
+                };
+                messages.push(message);
+            });
+            localStorage.setItem('messages', JSON.stringify(messages));
+        }
+
+        // Function to load messages from localStorage
+        function loadMessages() {
+            var messages = localStorage.getItem('messages');
+            if (messages) {
+                messages = JSON.parse(messages);
+                for (var i = 0; i < messages.length; i++) {
+                    var message = messages[i];
+                    var messageElement = $('<div>').addClass(message.class).html(message.html);
+                    $('#response').append(messageElement);
+                }
+            }
+        }
+
+        // Call the loadMessages function when the page loads
+        $(document).ready(function () {
+            // Try to get the button immediately
+            var recommendationBtn = document.getElementById('getrecommendation');
+
+            if (recommendationBtn !== null) {
+                // If the button already exists, add the click listener immediately
+                addButtonClickListener(recommendationBtn);
+                // Call the moveButtonToResponse function immediately
+                moveButtonToResponse();
+            } else {
+                // If the button doesn't exist yet, create a mutation observer to wait for it
+                var observer = new MutationObserver(function (mutations) {
+                    mutations.forEach(function (mutation) {
+                        if (mutation.addedNodes) {
+                            mutation.addedNodes.forEach(function (node) {
+                                if (node.id === 'getrecommendation') {
+                                    // Once the button is added to the DOM, add the click listener and stop observing
+                                    addButtonClickListener(node);
+                                    observer.disconnect();
+                                    // Call the moveButtonToResponse function after the button is added
+                                    moveButtonToResponse();
+                                }
+                            });
+                        }
+                    });
+                });
+
+                // Start observing the document with the configured parameters
+                observer.observe(document.body, { childList: true, subtree: true });
+            }
+
+            // your previous document ready code here...
+            loadMessages();
+        });
+        function moveButtonToResponse() {
+            var paragraphWithButton = $('#response p:has(#getrecommendation)');
+            if (paragraphWithButton.length > 0) {
+                var recommendationBtn = paragraphWithButton.find('#getrecommendation');
+                if (recommendationBtn.length > 0) {
+                    recommendationBtn.appendTo('#response');
+                    // Attach the event listener to the button
+                    // addButtonClickListener(recommendationBtn.get(0));
+                }
+            }
+        }
+
+        // Call the moveButtonToResponse function when the page loads
+        // $(document).ready(moveButtonToResponse);
+        function startNewSession() {
+            // Clear the content inside the response division
+            $('#response').empty();
+
+            // Clear the input field
+            $('#usercontext').val('');
+            localStorage.clear();
+            // Make a request to the server to clear the session data
+            $.ajax({
+                type: 'GET',
+                url: '/clear_session',
+                success: function () {
+                    Toastify({
+                        text: "Embarked! You are now on a new conversation",
+                        duration: 3000,
+                        newWindow: true,
+                        close: true,
+                        gravity: "top",
+                        position: 'right',
+                        backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)",
+                        stopOnFocus: true
+                    }).showToast();
+                }
+            });
+        }
+
+        // Add event listener to the "Start New Session" button
+        $('#new-session-btn').on('click', function () {
+            startNewSession();
+        });
+
+        function convertMarkdownTableToHTML(input) {
+            // Split the input by double newline to separate table and non-table parts
+            var parts = input.split("\n\n");
+
+            // Initialize an empty output
+            var output = "";
+
+            // Iterate over each part
+            parts.forEach(function (part) {
+                // If this part is a table (starts with '|')
+                if (part.trim().startsWith("|")) {
+                    var lines = part.split("\n");
+
+                    output += "<table class='table table-striped'>\n";
+                    var cellType = "th";
+
+                    for (var i = 0; i < lines.length; i++) {
+                        if (lines[i].trim().length > 0) {
+                            var cells = lines[i].split("|").map(function (cell) {
+                                return cell.trim();
+                            }).filter(function (cell) {
+                                return cell !== "";
+                            });
+
+                            if (cells.length > 0) {
+                                // Ignore the line separating headers from data
+                                if (i !== 1) {
+                                    output += "<tr>\n";
+                                    for (var j = 0; j < cells.length; j++) {
+                                        output += "<" + cellType + ">" + cells[j] + "</" + cellType + ">\n";
+                                    }
+                                    output += "</tr>\n";
+                                }
+
+                                if (i === 0) {
+                                    cellType = "td";
+                                }
+                            }
+                        }
+                    }
+
+                    output += "</table>\n";
+                } else {
+                    // If this part is not a table, wrap it in a paragraph
+                    output += "<p>" + part.trim() + "</p>\n";
+                }
+            });
+
+            return output;
+        }
+
+
+        function formatServerResponse(response) {
+            // Check if the response is already a string
+            if (typeof response !== 'string') {
+                // If not, convert it to a string
+                response = String(response);
+            }
+
+            // Add line breaks before numbered items
+            response = response.replace(/\s+(\d+\.)/g, '<br/>$1');
+
+            // Split the response into separate lines
+            var lines = response.split("\n");
+
+            // Initialize an empty formatted response
+            var formattedResponse = "";
+
+            // Iterate over each line
+            lines.forEach(function (line) {
+                // Remove leading and trailing whitespace
+                var trimmedLine = line.trim();
+
+                // If the line is not empty, add it to the formatted response
+                if (trimmedLine !== "") {
+                    // Add a line break before each line except the first one
+                    if (formattedResponse !== "") {
+                        formattedResponse += "<br/>";
+                    }
+
+                    formattedResponse += trimmedLine;
+                }
+            });
+
+            return formattedResponse;
+        }
+
+        // This function checks if the response text is a markdown table
+        function isMarkdownTable(text) {
+            var lines = text.split("\n");
+            if (lines.length < 2) {
+                return false;
+            }
+            // checking if the second line of the table is a valid table delimiter in markdown.
+            return lines[1].trim().split("").every(function (cell) {
+                return cell === "-" || cell === "|";
+            });
+        }
+
+        function formatText(text) {
+            let formattedText = text.replace(/\n/g, '<br/>').replace(/\t/g, '&nbsp;&nbsp;&nbsp;&nbsp;');
+            return formattedText;
+        }
+
+        var converter = new showdown.Converter();
+
+        $('#download-btn').on('click', function () {
+            var format = prompt('Enter the format you want to download the conversation in (pdf/word):');
+            var text = '';
+            $('.message').each(function () {
+                text += $(this).text() + '\n';
+            });
+
+            if (format === 'pdf') {
+                var docDefinition = {
+                    content: [
+                        {
+                            text: text,
+                            fontSize: 10,
+                            lineHeight: 1.5,
+                            margin: [0, 0, 0, 10]
+                        }
+                    ]
+                };
+
+                pdfMake.createPdf(docDefinition).download('conversation.pdf');
+            } else if (format === 'word') {
+                // The rest of the code for word format remains the same
+                // ...
+            } else {
+                alert('Invalid format entered. Please enter either pdf or word.');
+            }
+        });
+
+        $(window).on('beforeunload', function () {
+            return 'Are you sure you want to leave? Your chat data might be lost.';
+        });
+        var requestInProgress = false;
+
+        $('form').on('submit', function (e) {
+            e.preventDefault();
+            var userMessage = $('#usercontext').val().trim();
+            if (userMessage == '' || requestInProgress) {
+                // Show toast only if a user tries to send a message while a request is in progress
+                if (requestInProgress) {
+                    Toastify({
+                        text: "Please wait for the current response",
+                        duration: 3000,
+                        newWindow: true,
+                        close: true,
+                        gravity: "top",
+                        position: 'right',
+                        backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)",
+                        stopOnFocus: true
+                    }).showToast();
+                }
+
+
+                if (userMessage == '') {
+                    Toastify({
+                        text: "Message cannot be empty",
+                        duration: 3000,
+                        newWindow: true,
+                        close: true,
+                        gravity: "top",
+                        position: 'right',
+                        backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)",
+                        stopOnFocus: true
+                    }).showToast();
+                    return;
+                }
+                return;
+            }
+            if (/<[^>]*>/g.test(userMessage)) {
+                Toastify({
+                    text: "HTML code is not allowed",
+                    duration: 3000,
+                    newWindow: true,
+                    close: true,
+                    gravity: "top",
+                    position: 'right',
+                    backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)",
+                    stopOnFocus: true
+                }).showToast();
+                return;
+            }
+            var timestamp = new Date().toLocaleTimeString();
+
+            var formattedUserMessage = formatText(userMessage);
+
+            var userMessageFormatted = '<div class="message user-message"><strong>You:</strong> ' + formattedUserMessage +
+                ' <span class="timestamp">(' + timestamp + ')</span></div>';
+
+            $('#response').append(userMessageFormatted);
+            $("#response").animate({ scrollTop: $('#response').prop("scrollHeight") }, 1000);
+
+            var typingIndicator = '<div class="message ai-message" id="typing"><strong>Mark II:</strong> <div class="typing-indicator"><img src="https://s12.gifyu.com/images/output-onlinegiftools68048f95bf6b5524.gif" alt="Typing..."></div></div>';
+            $('#response').append(typingIndicator);
+            requestInProgress = true;
+            $.ajax({
+                type: 'POST',
+                url: '/',
+                data: $(this).serialize(),
+                success: function (response) {
+                    var htmlMessage = '';
+                    var timestamp = new Date().toLocaleTimeString();
+                    requestInProgress = false;
+                    var formattedResponse = formatServerResponse(response);
+                    $('#typing').remove();
+
+                    let responseMessage = typeof response === 'string' ? response : response.message;
+
+                    if (isMarkdownTable(responseMessage)) {
+                        htmlMessage = convertMarkdownTableToHTML(responseMessage);
+                    } else {
+                        htmlMessage = formatText(responseMessage);
+                    }
+
+                    setTimeout(function () {
+                        var aiMessageFormatted = '<div class="message ai-message"><strong>MARK - II:</strong> ' + htmlMessage +
+                            ' <span class="timestamp">(' + timestamp + ')</span><span class="copy-icon"><i class="fas fa-copy"></i></span></div>';
+
+                        $('#response').append(aiMessageFormatted);
+                        $("#response").animate({ scrollTop: $('#response').prop("scrollHeight") }, 1000);
+                    }, 300);
+                    setTimeout(function () {
+                        saveMessages(); // Save messages to localStorage after a short delay
+                    }, 1000);
+                    // $('#usercontext').val('');
+                    $('#usercontext').css('height', '60px');
+                }
+            });
+        });
+
+        $('#usercontext').on('input', function () {
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight) + 'px';
+        });
+
+        $('#chat-form').on('keydown', function (e) {
+            if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                // Only submit if a request is not in progress
+                if (!requestInProgress) {
+                    $(this).submit();
+                    $('#usercontext').val('');
+                    $('#usercontext').css('height', '60px');
+                }
+            }
+        });
+
+        $(document).on('click', '.copy-icon', function () {
+            var text = $(this).parent().text();
+            var el = document.createElement('textarea');
+            el.value = text;
+            el.setAttribute('readonly', '');
+            el.style.position = 'absolute';
+            el.style.left = '-9999px';
+            document.body.appendChild(el);
+            el.select();
+            document.execCommand('copy');
+            document.body.removeChild(el);
+
+            Toastify({
+                text: "Message copied to clipboard",
+                duration: 3000,
+                newWindow: true,
+                close: true,
+                gravity: "top",
+                position: 'right',
+                backgroundColor: "linear-gradient(to right, #00b09b, #96c93d)",
+                stopOnFocus: true
+            }).showToast();
+        });
+//   $(document).ready(function() {
+//     $.ajax({
+//         type: 'GET',
+//         url: '/get_conversation_history',
+//         success: function (response) {
+//             var conversationHistory = JSON.parse(response);
+//             for (var i = 0; i < conversationHistory.length; i++) {
+//                 var message = conversationHistory[i];
+//                 // Format each message as per your requirement
+//                 var formattedMessage = formatMessage(message); 
+//                 // Append each message to the chat window
+//                 $('#response').append(formattedMessage);
+//             }
+//         }
+//     });
+// });
+
+    </script>
+
+</body>
+
+</html>
